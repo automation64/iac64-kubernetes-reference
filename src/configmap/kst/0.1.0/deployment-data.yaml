@@ -1,0 +1,44 @@
+---
+apiVersion: "apps/v1"
+kind: "Deployment"
+metadata:
+  labels:
+    app: "configmap-data"
+  name: configmap-data
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: "configmap-data"
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: "configmap-data"
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 6464
+      containers:
+        - image: "busybox:latest"
+          name: "busybox"
+          resources:
+            requests:
+              cpu: "10m"
+              memory: "24Mi"
+            limits:
+              cpu: "20m"
+              memory: "32Mi"
+          securityContext:
+            readOnlyRootFilesystem: true
+          command:
+            - "/bin/sh"
+            - "-c"
+            - "while true; do echo \"KEY_1=$KEY_1\"; sleep 10; done"
+          env:
+          - name: "KEY_1"
+            valueFrom:
+              configMapKeyRef:
+                name: "configmap-data"
+                key: "KEY_1"
+...

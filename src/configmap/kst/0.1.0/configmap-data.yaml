@@ -1,0 +1,9 @@
+---
+apiVersion: "v1"
+kind: "ConfigMap"
+metadata:
+  name: "configmap-data"
+data:
+  KEY_1: "VALUE_1"
+  KEY_2: "VALUE_2"
+...

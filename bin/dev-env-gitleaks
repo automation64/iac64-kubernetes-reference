@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+# template-env: 1.2.0
+#######################################
+# Copyright SerDigital64 - https://github.com/serdigital64
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at: http://www.apache.org/licenses/LICENSE-2.0
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#######################################
+
+#
+# Module parameters
+#
+# * Use .dev.env file to override values
+#
+
+# shellcheck disable=SC2154
+{
+  # SAST / GitLeaks / Format
+  export DEV_SAST_GITLEAKS_FORMAT="${DEV_SAST_GITLEAKS_FORMAT:-sarif}"
+}
+
+#
+# Locals
+#
+# * Use .local.env file or CICD variables to override values
+#
+
+# shellcheck disable=SC2154
+{
+  # Lib / GitLeaks / Skip installation?
+  export DEV_LIB_GITLEAKS_SKIP='YES'
+  # Lib / GitLeaks / Target
+  export DEV_LIB_GITLEAKS_TARGET="${DEV_PATH_LIB}/glk"
+  # Lib / GitLeaks / Command
+  export DEV_LIB_GITLEAKS_BIN="${DEV_LIB_GITLEAKS_BIN:-}"
+  if [[ -z "$DEV_LIB_GITLEAKS_BIN" ]]; then
+    DEV_LIB_GITLEAKS_BIN="$(bl64_bsh_command_locate_user 'gitleaks')"
+    if [[ -z "$DEV_LIB_GITLEAKS_BIN" ]]; then
+      DEV_LIB_GITLEAKS_BIN="${DEV_LIB_GITLEAKS_TARGET}/gitleaks"
+      if [[ ! -x "${DEV_LIB_GITLEAKS_BIN}" ]]; then
+        DEV_LIB_GITLEAKS_SKIP='NO'
+      fi
+    fi
+  fi
+}
+
+#
+# Internal variables
+#
+# * Shared internal variables for module tasks
+#
+
+# shellcheck disable=SC2154
+{
+  # Env / GitLeaks / Module environment definition version
+  export DEV_ENV_GITLEAKS_VERSION='1.2.0'
+  # Lib / GitLeaks / Installer
+  export DEV_LIB_GITLEAKS_INSTALLER="${DEV_LIB_INSTALLER64_TARGET}/install-gitleaks"
+}

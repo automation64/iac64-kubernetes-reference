@@ -1,0 +1,51 @@
+---
+apiVersion: "apps/v1"
+kind: "Deployment"
+metadata:
+  labels:
+    app: "configmap-file"
+  name: configmap-file
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: "configmap-file"
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: "configmap-file"
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 6464
+      containers:
+        - image: "busybox:latest"
+          name: "busybox"
+          resources:
+            requests:
+              cpu: "10m"
+              memory: "24Mi"
+            limits:
+              cpu: "20m"
+              memory: "32Mi"
+          securityContext:
+            readOnlyRootFilesystem: true
+          command:
+            - "/bin/sh"
+            - "-c"
+            - "while true; do ls -l /configmap-file; sleep 10; done"
+          volumeMounts:
+            - name: "configmap-file"
+              mountPath: "/configmap-file"
+              readOnly: true
+      volumes:
+        - name: "configmap-file"
+          configMap:
+            name: "configmap-file"
+            items:
+              - key: "FILE_1"
+                path: "FILE_1.txt"
+              - key: "FILE_2"
+                path: "FILE_2.txt"
+...

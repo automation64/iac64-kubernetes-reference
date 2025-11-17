@@ -1,0 +1,13 @@
+---
+apiVersion: "v1"
+kind: "ConfigMap"
+metadata:
+  name: "configmap-file"
+data:
+  FILE_1: |
+    KEY_11="VALUE_11"
+    KEY_12="VALUE_12"
+  FILE_2: |
+    KEY_21="VALUE_21"
+    KEY_22="VALUE_22"
+...
