@@ -1,0 +1,10 @@
+---
+apiVersion: "v1"
+kind: "Namespace"
+metadata:
+  name: "object-selector"
+spec:
+  selector:
+    matchLabels:
+      X_LABEL_KEY_X: "X_LABEL_VALUE_X"
+...

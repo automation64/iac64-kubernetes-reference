@@ -1,0 +1,10 @@
+---
+apiVersion: "v1"
+kind: "Namespace"
+metadata:
+  name: "object-annotations"
+  annotations:
+    object.key1: "annotations1"
+    object.key2: "annotations2"
+spec: {}
+...

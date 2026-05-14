@@ -1,0 +1,81 @@
+# Reference: https://kubernetes.io/docs/reference/kubernetes-api/common-definitions/label-selector/#LabelSelector
+# Reference: https://kubernetes.io/docs/reference/kubernetes-api/common-definitions/node-selector-requirement/
+---
+apiVersion: "v1"
+kind: "Pod"
+metadata:
+  name: "pod-affinity"
+  labels:
+    app: "pod-affinity"
+spec:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 6464
+  containers:
+    - image: "busybox:latest"
+      name: "busybox"
+      resources:
+        requests:
+          cpu: "10m"
+          memory: "24Mi"
+        limits:
+          cpu: "20m"
+          memory: "32Mi"
+      securityContext:
+        readOnlyRootFilesystem: true
+      command:
+        - "/bin/sh"
+        - "-c"
+        - "while true; do echo 'hello world'; sleep 10; done"
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: "sample_label"
+                operator: "Gt"
+                values:
+                  - "5"
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          preference:
+            matchExpressions:
+              - key: "X_LABEL_KEY_X"
+                operator: "Lt"
+                values:
+                  - "55"
+    podAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchExpressions:
+              - key: "sample_label"
+                operator: "NotIn"
+                values:
+                  - "X_LABEL_VALUE_X"
+          topologyKey: "X_TOPOLOGY_KEY_X"
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+                - key: "sample_label"
+                  operator: "In"
+                  values:
+                    - "X_LABEL_VALUE_X"
+            topologyKey: "X_TOPOLOGY_KEY_X"
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchExpressions:
+              - key: "sample_label"
+                operator: "DoesNotExist"
+          topologyKey: "X_TOPOLOGY_KEY_X"
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+                - key: "sample_label"
+                  operator: "Exists"
+            topologyKey: "X_TOPOLOGY_KEY_X"
+...

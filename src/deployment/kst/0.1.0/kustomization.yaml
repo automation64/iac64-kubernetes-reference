@@ -1,15 +1,12 @@
+# Reference: https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/deployment-v1/
 ---
 apiVersion: "kustomize.config.k8s.io/v1beta1"
 kind: "Kustomization"
 
 resources:
   - "deployment-basic.yaml"
-  - "deployment-env.yaml"
   - "deployment-storage-emptydir.yaml"
 
-  - "horizontalpodautoscaler.yaml"
   - "deployment-hpa.yaml"
-
-  - "poddisruptionbudget.yaml"
-  - "deployment-pdr.yaml"
+  - "horizontalpodautoscaler.yaml"
 ...

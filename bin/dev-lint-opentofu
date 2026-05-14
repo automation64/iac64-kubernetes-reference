@@ -13,9 +13,7 @@
 # limitations under the License.
 #######################################
 
-# shellcheck source=bin/dev-set
-source ./bin/dev-set || { echo 'dev-set:Error: unable to load dev environment' 2>&1 && exit 1; }
-# shellcheck source-path=/opt/bl64
+source ./bin/dev-set || exit 1
 source "${DEV_LIB_BASHLIB64_TARGET}/bashlib64-module-tf.bash" &&
   source "${DEV_LIB_BASHLIB64_TARGET}/bashlib64-module-xsv.bash" &&
   source "${DEV_LIB_BASHLIB64_TARGET}/bashlib64-module-bsh.bash" &&
@@ -23,7 +21,6 @@ source "${DEV_LIB_BASHLIB64_TARGET}/bashlib64-module-tf.bash" &&
   source "${DEV_LIB_BASHLIB64_TARGET}/bashlib64-module-fmt.bash" &&
   source "${DEV_LIB_BASHLIB64_TARGET}/bashlib64-module-fs.bash" &&
   source "${DEV_LIB_BASHLIB64_TARGET}/bashlib64-core.bash" || exit 1
-# shellcheck source-path=bin
 source ./bin/dev-env-opentofu || exit 1
 
 declare MY_TARGET="${*:-${DEV_LINT_OPENTOFU_TARGET}}"
@@ -31,23 +28,25 @@ declare MY_TARGET="${*:-${DEV_LINT_OPENTOFU_TARGET}}"
 function my_lint() {
   bl64_dbg_app_show_function
   bl64_msg_show_task 'Run validate phase'
-  cd "$MY_TARGET" &&
+  cd "$DEV_LINT_OPENTOFU_TARGET" &&
     bl64_tf_run_tofu \
       validate
 }
 
 function my_initialize() {
   bl64_dbg_app_show_function
-  bl64_msg_show_about
-  bl64_lib_script_minver_check '22.5.0' &&
+  DEV_LINT_OPENTOFU_TARGET="$MY_TARGET"
+  dev_bin64_task_initialize &&
+    bl64_lib_script_minver_check "$DEV_LIB_OPENTOFU_REQUIRED_BASHLIB64" &&
+    bl64_check_directory "$DEV_LINT_OPENTOFU_TARGET" &&
     bl64_tf_setup "$(bl64_fmt_path_get_dirname "$DEV_LIB_OPENTOFU_BIN")" &&
-    bl64_msg_show_setup "$BL64_VAR_DEFAULT" \
-      'MY_TARGET'
+    dev_bin64_task_show_setup \
+      'DEV_LINT_OPENTOFU_TARGET'
 }
 
-bl64_lib_script_version_set '1.0.3'
+bl64_lib_script_version_set '1.0.5'
 bl64_msg_help_about_set 'Lint source code'
-bl64_msg_set_format "$DEV_VERBOSE" && bl64_msg_all_enable_verbose && bl64_dbg_set_level "$DEV_CICD_DEBUG" && my_initialize || exit $?
+dev_bin64_initialize && my_initialize || exit $?
 
 bl64_msg_show_batch_start "$BL64_SCRIPT_ID"
 my_lint

@@ -13,9 +13,7 @@
 # limitations under the License.
 #######################################
 
-# shellcheck source=bin/dev-set
-source ./bin/dev-set || { echo 'dev-set:Error: unable to load dev environment' 2>&1 && exit 1; }
-# shellcheck source-path=/opt/bl64
+source ./bin/dev-set || exit 1
 source "${DEV_LIB_BASHLIB64_TARGET}/bashlib64-module-rxtx.bash" &&
   source "${DEV_LIB_BASHLIB64_TARGET}/bashlib64-module-api.bash" &&
   source "${DEV_LIB_BASHLIB64_TARGET}/bashlib64-module-vcs.bash" &&
@@ -25,7 +23,6 @@ source "${DEV_LIB_BASHLIB64_TARGET}/bashlib64-module-rxtx.bash" &&
   source "${DEV_LIB_BASHLIB64_TARGET}/bashlib64-module-fmt.bash" &&
   source "${DEV_LIB_BASHLIB64_TARGET}/bashlib64-module-bsh.bash" &&
   source "${DEV_LIB_BASHLIB64_TARGET}/bashlib64-core.bash" || exit 1
-# shellcheck source-path=bin
 source ./bin/dev-env-git || exit 1
 
 declare MY_VERSION="${1:-}"
@@ -35,7 +32,7 @@ function my_release() {
 
   if [[ -n "$(bl64_vcs_run_git status --porcelain)" ]]; then
     bl64_msg_show_error 'Uncommitted changes found, please commit or stash them before creating a release branch.'
-    return $BL64_LIB_ERROR_CHECK_FAILED
+    return "$BL64_LIB_ERROR_CHECK_FAILED"
   fi
 
   bl64_msg_show_task "switch to main branch (${DEV_GIT_BRANCH_MAIN})"
@@ -52,9 +49,10 @@ function my_release() {
 
 function my_initialize() {
   bl64_dbg_app_show_function
-  bl64_msg_show_about
-  bl64_check_parameter 'MY_VERSION' &&
-    bl64_msg_show_setup "$BL64_VAR_DEFAULT" \
+  dev_bin64_task_initialize &&
+    dev_git_check_repo_root &&
+    bl64_check_parameter 'MY_VERSION' &&
+    dev_bin64_task_show_setup \
       'MY_VERSION' \
       'DEV_GIT_BRANCH_MAIN' \
       'DEV_GIT_REMOTE_ORIGIN' \
@@ -62,9 +60,9 @@ function my_initialize() {
       'DEV_GIT_BRANCH_RELEASE'
 }
 
-bl64_lib_script_version_set '1.0.1'
+bl64_lib_script_version_set '1.1.0'
 bl64_msg_help_about_set 'Create and push a squashed release branch from feature branch'
-bl64_msg_set_format "$DEV_VERBOSE" && bl64_msg_all_enable_verbose && bl64_dbg_set_level "$DEV_CICD_DEBUG" && my_initialize || exit $?
+dev_bin64_initialize && my_initialize || exit $?
 
 bl64_msg_show_batch_start "$BL64_SCRIPT_ID"
 my_release

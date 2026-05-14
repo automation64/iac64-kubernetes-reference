@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# template-lint: 1.2.0
 #######################################
 # Copyright SerDigital64 - https://github.com/serdigital64
 #
@@ -12,15 +13,9 @@
 # limitations under the License.
 #######################################
 
-#
-# Imports
-#
-
-# shellcheck source=bin/dev-set
-source ./bin/dev-set || { echo 'dev-set:Error: unable to load dev environment' 2>&1 && exit 1; }
+source ./bin/dev-set || exit 1
 # shellcheck source=bin/dev-env-hadolint
 source ./bin/dev-env-hadolint || exit 1
-# shellcheck source-path=/opt/bl64
 source "${DEV_LIB_BASHLIB64_TARGET}/bashlib64-module-xsv.bash" &&
   source "${DEV_LIB_BASHLIB64_TARGET}/bashlib64-module-bsh.bash" &&
   source "${DEV_LIB_BASHLIB64_TARGET}/bashlib64-module-txt.bash" &&
@@ -30,17 +25,10 @@ source "${DEV_LIB_BASHLIB64_TARGET}/bashlib64-module-xsv.bash" &&
   source "${DEV_LIB_BASHLIB64_TARGET}/bashlib64-core.bash" ||
   exit 1
 
-#
-# Globals
-#
-
+declare MY_TARGET="${*:-}"
 declare _DEV_LIB_RUN_IN_CONTAINER=''
 
-#
-# Functions
-#
-
-function dev_lint_hadolint() {
+function my_lint() {
   bl64_dbg_app_show_function "$@"
   local target="$*"
   local current=''
@@ -52,14 +40,14 @@ function dev_lint_hadolint() {
   for current in $target; do
     bl64_msg_show_phase "lint target: ${current}"
     if [[ -n "$_DEV_LIB_RUN_IN_CONTAINER" ]]; then
-      dev_lint_hadolint_container "$current"
+      my_lint_container "$current"
     else
-      dev_lint_hadolint_local "$current"
+      my_lint_local "$current"
     fi
   done
 }
 
-function dev_lint_hadolint_container() {
+function my_lint_container() {
   bl64_dbg_app_show_function "$@"
   local target="$1"
   # shellcheck disable=SC2086
@@ -74,7 +62,7 @@ function dev_lint_hadolint_container() {
     "$target"
 }
 
-function dev_lint_hadolint_local() {
+function my_lint_local() {
   bl64_dbg_app_show_function "$@"
   local target="$1"
   "$DEV_LIB_HADOLINT_BIN" \
@@ -82,14 +70,14 @@ function dev_lint_hadolint_local() {
     "$target"
 }
 
-function dev_lint_initialize() {
-  bl64_dbg_app_show_function "$@"
-  local sources="$*"
-  if [[ -z "$sources" ]]; then
-    bl64_check_export 'DEV_LINT_HADOLINT_SOURCE' &&
-      bl64_check_directory "$DEV_LINT_HADOLINT_SOURCE" ||
-      return $?
-  fi
+function my_initialize() {
+  bl64_dbg_app_show_function
+  dev_bin64_task_initialize &&
+    if [[ -z "$DEV_LINT_HADOLINT_SOURCE" ]]; then
+      bl64_check_export 'DEV_LINT_HADOLINT_SOURCE' &&
+        bl64_check_directory "$DEV_LINT_HADOLINT_SOURCE" ||
+        return $?
+    fi
   if ! bl64_bsh_command_is_executable "$DEV_LIB_HADOLINT_BIN"; then
     _DEV_LIB_RUN_IN_CONTAINER='YES'
     bl64_cnt_setup ||
@@ -97,16 +85,10 @@ function dev_lint_initialize() {
   fi
 }
 
-#
-# Main
-#
-
-declare dev_lint_target="${*:-}"
-
 bl64_lib_script_version_set '4.0.3'
-bl64_msg_set_format "$DEV_VERBOSE" && bl64_msg_all_enable_verbose
+bl64_msg_help_about_set 'Lint source code'
+dev_bin64_initialize && my_initialize || exit $?
 
 bl64_msg_show_batch_start "$BL64_SCRIPT_ID"
-dev_lint_initialize "$dev_lint_target" &&
-  dev_lint_hadolint "$dev_lint_target"
+my_lint "$MY_TARGET"
 bl64_msg_show_batch_finish $? "$BL64_SCRIPT_ID"

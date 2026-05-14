@@ -1,0 +1,38 @@
+---
+apiVersion: "apps/v1"
+kind: "Deployment"
+metadata:
+  labels:
+    app: "deployment-poddisruptionbudget"
+  name: "deployment-poddisruptionbudget"
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: "deployment-poddisruptionbudget"
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: "deployment-poddisruptionbudget"
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 6464
+      containers:
+        - image: "busybox:latest"
+          name: "busybox"
+          resources:
+            requests:
+              cpu: "10m"
+              memory: "24Mi"
+            limits:
+              cpu: "20m"
+              memory: "32Mi"
+          securityContext:
+            readOnlyRootFilesystem: true
+          command:
+            - "/bin/sh"
+            - "-c"
+            - "while true; do echo 'hello world'; sleep 10; done"
+...

@@ -4,27 +4,31 @@ kind: "CronJob"
 metadata:
   name: "cronjob-basic"
 spec:
-  template:
+  schedule: "05 * * * *"
+  jobTemplate:
+    metadata:
+      name: "cronjob-basic"
     spec:
-      schedule: "05 * * * *"
-      securityContext:
-        runAsNonRoot: true
-        runAsUser: 6464
-      restartPolicy: "Never"
-      containers:
-        - image: "busybox:latest"
-          name: "busybox"
-          resources:
-            requests:
-              cpu: "10m"
-              memory: "24Mi"
-            limits:
-              cpu: "20m"
-              memory: "32Mi"
+      template:
+        spec:
           securityContext:
-            readOnlyRootFilesystem: true
-          command:
-            - "/bin/sh"
-            - "-c"
-            - "echo 'hello world'"
+            runAsNonRoot: true
+            runAsUser: 6464
+          restartPolicy: "Never"
+          containers:
+            - image: "busybox:latest"
+              name: "busybox"
+              resources:
+                requests:
+                  cpu: "10m"
+                  memory: "24Mi"
+                limits:
+                  cpu: "20m"
+                  memory: "32Mi"
+              securityContext:
+                readOnlyRootFilesystem: true
+              command:
+                - "/bin/sh"
+                - "-c"
+                - "echo 'hello world'"
 ...
